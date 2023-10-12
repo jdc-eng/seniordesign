@@ -1,5 +1,6 @@
 '''Thanks Niko, I bow to you.'''
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def invertKeplerTimeEquation(M,E0,e):
@@ -43,3 +44,89 @@ def kepler2rv(a,e,Omega,I,omega,tmtp,mu):
     r = np.matmul(pDCMi.transpose(),r_p)
     v = np.matmul(pDCMi.transpose(),v_p)
     return r,v
+
+def compPlot(tvec, solvec):
+    ''' tvec is odesol.t
+        solvec is the odesol.y'''
+
+    x_vals = np.array(solvec[0,:])
+    y_vals = np.array(solvec[1,:])
+    z_vals = np.array(solvec[2,:])
+
+    fig1, axs = plt.subplots(3,1)
+
+    axs[0].plot(tvec, x_vals)
+    # axs[0].axis('equal')
+    axs[0].set_title('X-Pos v. Time (s)', fontsize=10)
+    axs[0].set_xlim(tvec[0], tvec[-1])
+    # axs[0].set_ylim(np.min(x_vals), np.max(x_vals))
+
+    axs[1].plot(tvec, y_vals)
+    # axs[1].axis('equal')
+    axs[1].set_title('Y-Pos v. Time (s)', fontsize=10)
+    axs[1].set_xlim(tvec[0], tvec[-1])
+    axs[1].set_ylim(np.min(y_vals), np.max(y_vals))
+
+    axs[2].plot(tvec, z_vals)
+    # axs[2].axis('equal')
+    axs[2].set_title('Z-Pos v. Time (s)', fontsize=10)
+    axs[2].set_xlim(tvec[0], tvec[-1])
+    # axs[2].set_ylim(np.min(z_vals), np.max(z_vals))
+
+    # return fig1
+
+def Orbit3D(solvec, mu):
+    x_vals = np.array(solvec[0,:])
+    y_vals = np.array(solvec[1,:])
+    z_vals = np.array(solvec[2,:])
+
+    n = np.linspace(0,2*np.pi,100)
+
+    EarthX = -mu*np.cos(n)
+    EarthY = -mu*np.sin(n)
+
+    MoonX = (1-mu)*np.cos(n)
+    MoonY = (1-mu)*np.sin(n)
+
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.scatter(x_vals,y_vals,z_vals, c='r', s=.5, label='Craft')
+    ax.scatter(mu, 0, 0, c='g', marker='x', s=20, label='Earth')
+    ax.scatter(-(1-mu), 0, 0, c='b', marker='^', s=5, label='Moon')
+    ax.scatter(0,0,0, c='m', marker='*')
+    ax.plot3D(EarthX, EarthY, 0, c='g')
+    ax.plot3D(MoonX, MoonY, 0, c='b')
+
+    plt.axis('equal')
+    ax.legend()
+    plt.xlabel('X')
+    plt.ylabel('Y')
+
+
+def Orbit2D(solvec, mu):
+    x_vals = np.array(solvec[0,:])
+    y_vals = np.array(solvec[1,:])
+    z_vals = np.array(solvec[2,:])
+
+    n = np.linspace(0,2*np.pi,100)
+
+    EarthX = -mu*np.cos(n)
+    EarthY = -mu*np.sin(n)
+
+    MoonX = (1-mu)*np.cos(n)
+    MoonY = (1-mu)*np.sin(n)
+
+    fig = plt.figure()
+    ax = plt.axes()
+    ax.plot(x_vals,y_vals, c='r', label='Craft')
+    ax.plot(-mu, 0, c='g', marker='x', label='Earth')
+    ax.plot(1-mu, 0, c='b', marker='^', label='Moon')
+    ax.plot(0,0, c='m', marker='*')
+    ax.plot(EarthX, EarthY, c='g')
+    ax.plot(MoonX, MoonY, c='b')
+
+    plt.axis('equal')
+    ax.legend()
+    ax.set_xlim(-1,1)
+    plt.xlabel('X')
+    plt.ylabel('Y')
