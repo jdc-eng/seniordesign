@@ -1,6 +1,7 @@
 '''Thanks Niko, I bow to you.'''
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 
 
 def invertKeplerTimeEquation(M,E0,e):
@@ -75,7 +76,7 @@ def compPlot(tvec, solvec):
 
     # return fig1
 
-def Orbit3D(solvec, mu):
+def Orbit3D(solvec, time, mu):
     x_vals = np.array(solvec[0,:])
     y_vals = np.array(solvec[1,:])
     z_vals = np.array(solvec[2,:])
@@ -90,9 +91,11 @@ def Orbit3D(solvec, mu):
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    ax.scatter(x_vals,y_vals,z_vals, c='r', s=.5, label='Craft')
-    ax.scatter(mu, 0, 0, c='g', marker='x', s=20, label='Earth')
-    ax.scatter(-(1-mu), 0, 0, c='b', marker='^', s=5, label='Moon')
+
+    traj = ax.scatter(x_vals,y_vals,z_vals, c=time, cmap = 'plasma', s=.5, label='Spacecraft')
+
+    ax.scatter(-mu, 0, 0, c='g', marker='x', s=20, label='Earth')
+    ax.scatter(1-mu, 0, 0, c='b', marker='^', s=5, label='Moon')
     ax.scatter(0,0,0, c='m', marker='*')
     ax.plot3D(EarthX, EarthY, 0, c='g')
     ax.plot3D(MoonX, MoonY, 0, c='b')
@@ -101,9 +104,9 @@ def Orbit3D(solvec, mu):
     ax.legend()
     plt.xlabel('X')
     plt.ylabel('Y')
+    plt.colorbar(traj)
 
-
-def Orbit2D(solvec, mu):
+def Orbit2D(solvec, time, mu):
     x_vals = np.array(solvec[0,:])
     y_vals = np.array(solvec[1,:])
     z_vals = np.array(solvec[2,:])
@@ -118,7 +121,7 @@ def Orbit2D(solvec, mu):
 
     fig = plt.figure()
     ax = plt.axes()
-    ax.plot(x_vals,y_vals, c='r', label='Craft')
+    traj = ax.plot(x_vals,y_vals, color='k', label='Craft')
     ax.plot(-mu, 0, c='g', marker='x', label='Earth')
     ax.plot(1-mu, 0, c='b', marker='^', label='Moon')
     ax.plot(0,0, c='m', marker='*')
@@ -130,3 +133,4 @@ def Orbit2D(solvec, mu):
     ax.set_xlim(-1,1)
     plt.xlabel('X')
     plt.ylabel('Y')
+    # plt.colorbar(traj)

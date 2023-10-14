@@ -29,6 +29,24 @@ def SynodicEOMs(t, state):
     statedot[5] = -(1-mustar)*z/r1**3 - mustar*z/r2**3
     return np.array(statedot)
 
+def BarcentricEOMs(t, state):
+    x, y, z, vx, vy, vz = state
+    mustar = c.mustar
+    
+    
+    r1 = np.sqrt((x+mustar*np.cos(1*t))**2 + (y-mustar*np.sin(1*t))**2 + z**2)          # Magnitude of r1-sat vector
+    r2 = np.sqrt((x-(1+mustar)*np.cos(1*t))**2 + (y-(1+mustar)*sin(1*t))**2 + z**2)        # Magnitude of r2-sat vector
+    
+    statedot = np.zeros(len(state))
+
+    statedot[0:3] = state[3:]
+    statedot[3] = - (1-mustar)*(x+mustar)/r1**3 - mustar*(x-1+mustar)/r2**3
+    statedot[4] = y-2*vx-(1-mustar)*y/r1**3 - mustar*y/r2**3
+    statedot[5] = -(1-mustar)*z/r1**3 - mustar*z/r2**3
+    return np.array(statedot)
+
+
+
 
 def two_body_ode( t, state, mu = c.EMmu ):
 	# state = [ rx, ry, rz, vx, vy, vz ]
