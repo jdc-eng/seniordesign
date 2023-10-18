@@ -51,9 +51,6 @@ def Syn2Bar(synstate, t, args={}):
     At = np.matrix([[np.cos(t), -np.sin(t), 0],
                     [np.sin(t),  np.cos(t), 0],
                     [        0,          0, 1]])
-    # At = np.matrix([[np.cos(2*np.pi*t), -np.sin(2*np.pi*t), 0],
-    #                 [np.sin(2*np.pi*t),  np.cos(2*np.pi*t), 0],
-    #                 [0,                    0,               1]])
 
     _args = {'Frame': 'ECI'}
     if args['Frame'] == 'ECI':
@@ -75,26 +72,56 @@ def Syn2Bar(synstate, t, args={}):
                         [  vz  ]])
 
         r = np.matrix([[x],
-                    [y],
-                    [z]])
+                       [y],
+                       [z]])
 
         barstate = np.zeros(len(synstate))
-        barstate[0:3] = np.matmul( At, r )
-        barstate[3], barstate[4], barstate[5]  = np.matmul( At, Vt)
+        barstate[0], barstate[1], barstate[2] = np.matmul( At, r )
+        barstate[3], barstate[4], barstate[5] = np.matmul( At, Vt)
+        # barstate[6] = t
     return barstate
 
+def Bar2Syn(barstate, t):
+    x,y,z,vx,vy,vz = barstate
+    rBAR = np.matrix([[barstate[0]], [barstate[1]], [barstate[2]]])
+    vBAR = np.matrix([[barstate[3]], [barstate[4]], [barstate[5]]])
+
+    At = np.matrix([[np.cos(t), -np.sin(t), 0],
+                    [np.sin(t),  np.cos(t), 0],
+                    [        0,          0, 1]])
+    
+    J = np.matrix([[0,  1, 0],
+                   [-1, 0, 0],
+                   [0,  0, 0]])
+    
+    rEMR = np.matmul( np.transpose(At), rBAR )
+    vEMR = np.matmul( np.transpose(At), ( vBAR + np.matmul( At, np.matmul( J, rEMR )) ) )
+    synstate = np.zeros(len(barstate))
+    synstate[0], synstate[1], synstate[2] = rEMR
+    synstate[3], synstate[4], synstate[5] = vEMR
+    return synstate
 
 def ECI2Syn(state, t):
     rECI = np.matrix([[state[0]], [state[1]], [state[2]]])
     vECI = np.matrix([[state[3]], [state[4]], [state[5]]])
-    
+    rE   = np.matrix([[c.mustar],[0],[0]])
+
     At = np.matrix([[np.cos(t), -np.sin(t), 0],
                     [np.sin(t),  np.cos(t), 0],
                     [        0,          0, 1]])
+    
     J = np.matrix([[0,  1, 0],
                    [-1, 0, 0],
                    [0,  0, 0]])
+    
+    rEMR = np.matmul( np.transpose(At), rECI) + rE
+    vEMR = -np.matmul(np.transpose(At), vECI) - np.matmul(J, ( rEMR + rE ))
+    synstate = np.zeros(len(state))
+    synstate[0], synstate[1], synstate[2] = rEMR
+    synstate[3], synstate[4], synstate[5] = vEMR
+    return synstate
 
-    rEMR = np.transpose(np.matmul( np.transpose(At), rECI) + np.matrix([[c.mustar],[0],[0]]))
-    vEMR = np.transpose(-np.matmul(np.transpose(At), vECI) - np.matmul(J, ( np.transpose(rEMR) + np.matrix([[c.mustar],[0],[0]]) )))
-    return np.concatenate((rEMR, vEMR), axis = 1)
+
+
+
+

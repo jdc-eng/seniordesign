@@ -16,9 +16,13 @@ def ode45(f,t,h):
     y[i+1] = y[i] + 1/6*(F1 + 2*F2 + 2*F3 + F4)
     return f
 
-def rk8th(fun, t0, y0, t_bound, rtol=0.001, atol=1e-06, vectorized=False, first_step=None, **extraneous):
 
-    odeSol = int.DOP853(fun, t0, y0, t_bound, rtol=0.001, atol=1e-06, vectorized=False, first_step=None, **extraneous)
-    return odeSol
+def prop3B(eoms, state0, t0, tbound, maxstep, atol, rtol):
+    ''' eoms are equations of motion from dynamics file;
+        state0 is the initial state vector;
+        t0, tbound are initial and final time values;
+        maxstep is maximum timestep size.'''
+    
+    return int.solve_ivp(fun=eoms, t_span=[t0,tbound], y0=state0, method='DOP853', max_step = maxstep, atol=atol, rtol=rtol)
 
 
