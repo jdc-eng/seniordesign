@@ -4,5 +4,5 @@ This repository is my senior design project investigating the trajectory design 
 
 It also includes the file `state_library.py`, which is a dictionary of interesting inital states in the E-M CR3BP. The common 3:1 resonance orbit is shown in the Synodic and Earth Centered Inertial frames below using it's name in the state library, 'Turbine'.
 
-![Synodic Rotating Frame]('EMR Turbine.jpg')
-![ECRF Frame]('ECRF Turbine.jpg')
+![Synodic Rotating Frame](/Simulation/EMR_Turbine.jpg)
+![ECRF Frame](/Simulation/ECRF_Turbine.jpg)
