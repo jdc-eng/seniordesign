@@ -77,11 +77,11 @@ def Orbit3D(solvec, time, mu, args={}):
         re = c.earthD / c.lstar;
         rm = c.moonD / c.lstar;
 
-        xe = re * np.outer(np.cos(n), np.sin(v)) + mu
+        xe = re * np.outer(np.cos(n), np.sin(v)) - mu
         ye = re * np.outer(np.sin(n), np.sin(v)) + 0
         ze = re * np.outer(np.ones(np.size(n)), np.cos(v)) + 0
 
-        xm = rm * np.outer(np.cos(n), np.sin(v)) - (1-mu)
+        xm = rm * np.outer(np.cos(n), np.sin(v)) + (1-mu)
         ym = rm * np.outer(np.sin(n), np.sin(v))
         zm = rm * np.outer(np.ones(np.size(n)), np.cos(v))
 
