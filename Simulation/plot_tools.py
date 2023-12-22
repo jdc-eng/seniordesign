@@ -3,6 +3,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 import constants as c
 
+def genPlot(xvals, yvals, xbound, ybound, labels={'xlabel':'Time (s)','ylabel':'Position (km)'}, legend={0:'Label1'}):
+    # numplot = np.shape(yvals)[1]
+    # print(numplot)
+    # axs = plt.plot() 
+    fig1, axs = plt.subplots()
+    # i = 0
+    # for signal in yvals[:,0]:
+    plt.plot(xvals, yvals)
+        # i += 1
+
+    # plt.plot(xvals, yvals[1,:])
+    # axs[0].axis('equal')
+    axs.set_title('X-Pos v. Time (s)', fontsize=10)
+    axs.set_xlim(xbound[0], xbound[1])
+    axs.set_ylim(ybound[0], ybound[1])
+    plt.xlabel(labels['xlabel'])
+    plt.ylabel(labels['ylabel'])
+
+
 def compPlot(tvec, solvec):
     ''' tvec is odesol.t
         solvec is the odesol.y'''
@@ -41,10 +60,10 @@ def Orbit3D(solvec, time, mu, args={}):
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    traj = ax.scatter(x_vals,y_vals,z_vals, c=time, cmap = 'plasma', s=.5, label='Spacecraft')
-    ax.scatter(0,0,0, c='m', marker='*', label='Barycenter')
+    traj = ax.scatter(x_vals,y_vals,z_vals, c=time, cmap = 'plasma', s=.5)
+    ax.scatter(0,0,0, c='m', marker='*')
 
-    if args['Frame'] == 'Barycentric':
+    if args['Frame'] == 'ECRF':
         n = np.linspace(0,2*np.pi,len(time))
         v = np.linspace(0, np.pi, len(time))
 
@@ -53,14 +72,14 @@ def Orbit3D(solvec, time, mu, args={}):
 
         EarthX = -mu*np.cos(n)
         EarthY = -mu*np.sin(n)
-        MoonX = (1-mu)*np.cos(n)
-        MoonY = (1-mu)*np.sin(n)
+        MoonX = (1)*np.cos(n)
+        MoonY = (1)*np.sin(n)
 
-        xe = re * np.outer(np.cos(n), np.sin(v)) - mu
+        xe = re * np.outer(np.cos(n), np.sin(v)) 
         ye = re * np.outer(np.sin(n), np.sin(v)) + 0
         ze = re * np.outer(np.ones(np.size(n)), np.cos(v)) + 0
 
-        xm = rm * np.outer(np.cos(n), np.sin(v)) + (1-mu)
+        xm = rm * np.outer(np.cos(n), np.sin(v)) + (1)
         ym = rm * np.outer(np.sin(n), np.sin(v))
         zm = rm * np.outer(np.ones(np.size(n)), np.cos(v))
         # c=time, cmap = 'plasma',
@@ -87,7 +106,7 @@ def Orbit3D(solvec, time, mu, args={}):
 
         ax.plot_surface(xe,ye,ze)
         ax.plot_surface(xm,ym,zm)
-        plt.title('Orbit in the Earth-Moon Rotating Synodic Frame (EMR).')
+        plt.title('Orbit in the Earth-Moon Rotating Frame')
 
     plt.axis('equal')
     ax.legend()
@@ -138,3 +157,16 @@ def Orbit2D(solvec, time, mu, args={}):
     plt.xlabel('X')
     plt.ylabel('Y')
     # plt.colorbar(traj)
+
+
+def JacobiPlot(C, time, ybound ):
+    fig = plt.figure()
+    ax = plt.axes()
+    ax.plot(time, C)
+
+    # ax.set_xlim(xbound[0], xbound[1])
+    ax.set_ylim(ybound[0], ybound[1])
+    plt.title('Jacobi Constant vs. Time')
+    plt.xlabel('Time')
+    plt.ylabel('Jacobi Constant C')
+

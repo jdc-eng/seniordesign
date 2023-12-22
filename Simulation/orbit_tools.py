@@ -45,19 +45,51 @@ def kepler2rv(a,e,Omega,I,omega,tmtp,mu):
     v = np.matmul(pDCMi.transpose(),v_p)
     return r,v
 
+def rv2kepler(r,v,mu):
+    """ Convert a position and velocity to Keplerian Elements.
+    INPUTS:
+        r - inertial position vector
+        v - inertial velocity vector
+        mu - gravitational parameter (units of this dictate units of output)
+    OUTPUTS:
+        a - semjax 
+        e - eccentricity
+        I - Inclination
+    """
+    rhat = r/np.linalg.norm(r)
+    vhat = v/np.linalg.norm(v)
+    h = np.cross(r,v)
+    hhat = h/np.linalg.norm(h)
+
+    ev = np.cross(v,np.cross(r,v))/mu-r/np.linalg.norm(r)
+    e = np.linalg.norm(ev)
+    ehat = ev/e
+
+    nu = np.arctan2(np.dot(np.cross(ehat, rhat),hhat),np.dot(rhat, ehat))
+
+    I = np.arccos(np.dot(hhat, np.array([0,0,1])))
+    if e<1:
+        a = np.linalg.norm(h)**2/(mu*(1-e**2))
+    elif np.abs(e-1)< 1e-8:
+        a = np.Infinity
+    else:
+        a = -np.linalg.norm(r)*(1+e*np.cos(nu))/(e**2-1)
+    return a,e,I
+
 def SolTransform(sol, rotation):
     _args = {'Bar2ECI': Bar2ECI,
-            'Syn2Bar':  Syn2Bar,
-            'Bar2Syn':  Bar2Syn
+             'Syn2Bar': Syn2Bar,
+             'Bar2Syn': Bar2Syn,
+             'ECI2Bar': ECI2Bar
             }
-    rotState = np.zeros( (6, len(sol.t)) )
+    rotState = np.zeros( (6, len(sol['t'])) )
 
     fun = _args[rotation]
     i = 0
-    for t in sol.t:
-        rotState[0,i], rotState[1,i], rotState[2,i], rotState[3,i], rotState[4,i], rotState[5,i]= fun(sol.y[:,i], t)
+    for t in sol['t']:
+        rotState[0,i], rotState[1,i], rotState[2,i], rotState[3,i], rotState[4,i], rotState[5,i]= fun(sol['y'][:,i], t)
         i += 1
-    RotSol = {'y':rotState, 't':sol.t}
+    RotSol = {'y':rotState, 't':sol['t']}
     return RotSol
 
 def Syn2Bar(synstate, t, args={}):
@@ -127,7 +159,7 @@ def ECI2Bar(state, t):
     rECI = np.matrix([[state[0]], [state[1]], [state[2]]])
     vECI = np.matrix([[state[3]], [state[4]], [state[5]]])
 
-    rE   = np.matrix([[-c.mustar],       [0],        [0]])
+    rE   = np.matrix([[-mu],       [0],        [0]])
     vE   = np.matrix([       [0],    [-mu*t],        [0]])
 
     At = np.matrix([[np.cos(t), -np.sin(t), 0],
@@ -137,10 +169,64 @@ def ECI2Bar(state, t):
     rBAR = rECI - np.matmul( At, rE )
     vBAR = vECI - np.matmul( At, vE )
 
-    ECIstate = np.zeros(len(state))
-    ECIstate[0], ECIstate[1], ECIstate[2] = rECI
-    ECIstate[3], ECIstate[4], ECIstate[5] = vECI
-    return ECIstate
+    BARstate = np.zeros(len(state))
+    BARstate[0], BARstate[1], BARstate[2] = rBAR
+    BARstate[3], BARstate[4], BARstate[5] = vBAR
+    return BARstate
+
+def Tisserand(state,mu):
+    ## Convert to regular shit first
+    r = state.y[0:3]* c.lstar
+    v = state.y[3:]* (c.lstar/c.tstar)
+    # print(r)
+    TissCrit = np.zeros(len(state.t))
+    
+    for i in range(len(state.t)) :
+        # print(r[:,i]) 
+        a, e, I = rv2kepler(r[:,i],v[:,i],mu)
+        
+        TissCrit[i] = 1/a + a*np.sqrt(a*(1-e**2))*np.cos(I)
+    return TissCrit
+
+def JacobiConstant(state, acc):
+    '''Finds the Jacobi Constant for either one set of initial conditions or at each point in an orbit.'''
+    
+    mu = c.mustar
+    rb1 = -mu
+    rb2 = 1 - mu
+
+    C = np.zeros(state.shape[1])
+    for iter in range(np.shape(state)[1]):
+        x,y,z,vx,vy,vz = state[:,iter]
+        ax, ay, az = acc[:,iter]
+        r1 = np.sqrt( (x - rb1)**2 + y**2 + z**2 )          # Magnitude of r1-sat vector
+        r2 = np.sqrt( (x - rb2)**2 + y**2 + z**2 )          # Magnitude of r2-sat vector
+
+        C[iter] = 2*(-.5*( x**2 + y**2 ) - ( (1-mu)/r1 + mu/r2 ) + .5*( vx**2 + vy**2 + vz**2 ) + ( ax*x + ay*y + az*z ))
+
+    return C
+
+
+def Dimensioning(pos, vel, acc, time):
+    '''Returns the dimensioned or nondimensionalized values for the 3-body problem. '''
+
+
+    return
+
+
+def SailCharacteristics(a0):
+    '''Returns the non-dimensionalized characteristic acceleration of the solar sail from mm/s^2'''
+
+    a_0 = a0*10**(-6)/ ( c.lstar/c.tstar**2 )
+    return a_0
+
+def closeApproach(sol):
+    """Returns the magnitude of the closest approach throughout the solution."""
+    pos = sol.y[0:3]
+    pmags = np.linalg.norm(pos, axis=0)
+    posclose = np.min(pmags)
+
+    return posclose, posclose*c.lstar
 
 # def Syn2ECI(synstate, t):
 #     '''Assumes both states coincide at t=0'''
