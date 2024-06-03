@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import constants as c
 
+## honestly should replace most of this with a plotting class that lets me do shit with a lot more abstraction
+
 def genPlot(xvals, yvals, xbound, ybound, labels={'xlabel':'Time (s)','ylabel':'Position (km)'}, legend={0:'Label1'}):
     # numplot = np.shape(yvals)[1]
     # print(numplot)
@@ -52,13 +54,40 @@ def compPlot(tvec, solvec):
 
     # return fig1
 
+def PhasePortraits(solvec, tvec):
+
+    x    = np.array(solvec[0,:])
+    y    = np.array(solvec[1,:])
+    z    = np.array(solvec[2,:])
+    xdot = np.array(solvec[3,:])
+    ydot = np.array(solvec[4,:])
+    zdot = np.array(solvec[5,:])
+
+    fig = plt.figure(2)
+    ax1 = plt.axes()
+    traj = ax1.scatter(x,xdot, c=tvec, cmap = 'plasma', s=0.5)
+    plt.axis('equal')
+    plt.xlabel('X')
+    plt.ylabel('Xdot')
+    plt.colorbar(traj)
+
+    plt.figure(3)
+    ax2 = plt.axes(projection='3d')
+    traj2 = ax2.scatter(y,ydot,x, c=tvec, cmap = 'plasma', s=0.5)
+    plt.axis('equal')
+    plt.xlabel('X')
+    plt.ylabel('Xdot')
+    plt.colorbar(traj2)
+    
+
+
 def Orbit3D(solvec, time, mu, args={}):
     _args = {'Frame': 'Synodic'}
     x = np.array(solvec[0,:])
     y = np.array(solvec[1,:])
     z = np.array(solvec[2,:])
 
-    fig = plt.figure()
+    
     ax = plt.axes(projection='3d')
     traj = ax.scatter(x,y,z, c=time, cmap = 'plasma', s=.5)
     ax.scatter(0,0,0, c='m', marker='*')
@@ -113,6 +142,45 @@ def Orbit3D(solvec, time, mu, args={}):
     plt.xlabel('X')
     plt.ylabel('Y')
     plt.colorbar(traj)
+
+
+def PlotManifold(solvec, time, mu, ax, title,eigval, eigvec):
+    # _args = {'Frame': 'Synodic'}
+    x_vals = np.array(solvec[0,:])
+    y_vals = np.array(solvec[1,:])
+    z_vals = np.array(solvec[2,:])
+
+    
+    # ax = plt.axes(projection='3d')
+    traj = ax.scatter(x_vals,y_vals,z_vals, c=time, cmap = 'plasma',s=.5)
+    ax.scatter(0,0,0, c='m', marker='*')
+
+    n = np.linspace(0,2*np.pi,100)
+    v = np.linspace(0, np.pi, 100)
+
+    re = c.earthD / c.lstar
+    rm = c.moonD / c.lstar
+
+    xe = re * np.outer(np.cos(n), np.sin(v)) - mu
+    ye = re * np.outer(np.sin(n), np.sin(v)) + 0
+    ze = re * np.outer(np.ones(np.size(n)), np.cos(v)) + 0
+
+    xm = rm * np.outer(np.cos(n), np.sin(v)) + (1-mu)
+    ym = rm * np.outer(np.sin(n), np.sin(v))
+    zm = rm * np.outer(np.ones(np.size(n)), np.cos(v))
+
+    ax.plot_surface(xe,ye,ze)
+    ax.plot_surface(xm,ym,zm)
+    plt.suptitle(title)
+
+    ax.set_title(("Eigenvalue: ", eigval ))
+    plt.axis('equal')
+    # ax.text2D(0.05, 0.95, (r'Eigenvalue: ', eigval, r'\nEigvec: ', eigvec), transform=ax.transAxes)
+    ax.legend()
+    plt.xlabel('X\n')
+    plt.ylabel('Y\n')
+    # plt.colorbar(traj)
+
 
 def Orbit2D(solvec, time, mu, args={}):
     _args = {'Frame':'Synodic'}
