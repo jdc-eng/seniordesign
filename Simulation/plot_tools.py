@@ -26,41 +26,41 @@ def compPlot(tvec, solvec):
     ''' tvec is odesol.t
         solvec is the odesol.y'''
 
-    x_vals = np.array(solvec[0,:])
-    y_vals = np.array(solvec[1,:])
-    z_vals = np.array(solvec[2,:])
+    x = np.array(solvec[0,:])
+    y = np.array(solvec[1,:])
+    z = np.array(solvec[2,:])
 
     fig1, axs = plt.subplots(3,1)
 
-    axs[0].plot(tvec, x_vals)
+    axs[0].plot(tvec, x)
     # axs[0].axis('equal')
     axs[0].set_title('X-Pos v. Time (s)', fontsize=10)
     axs[0].set_xlim(tvec[0], tvec[-1])
-    # axs[0].set_ylim(np.min(x_vals), np.max(x_vals))
+    # axs[0].set_ylim(np.min(x), np.max(x))
 
-    axs[1].plot(tvec, y_vals)
+    axs[1].plot(tvec, y)
     # axs[1].axis('equal')
     axs[1].set_title('Y-Pos v. Time (s)', fontsize=10)
     axs[1].set_xlim(tvec[0], tvec[-1])
-    axs[1].set_ylim(np.min(y_vals), np.max(y_vals))
+    axs[1].set_ylim(np.min(y), np.max(y))
 
-    axs[2].plot(tvec, z_vals)
+    axs[2].plot(tvec, z)
     # axs[2].axis('equal')
     axs[2].set_title('Z-Pos v. Time (s)', fontsize=10)
     axs[2].set_xlim(tvec[0], tvec[-1])
-    # axs[2].set_ylim(np.min(z_vals), np.max(z_vals))
+    # axs[2].set_ylim(np.min(z), np.max(z))
 
     # return fig1
 
 def Orbit3D(solvec, time, mu, args={}):
     _args = {'Frame': 'Synodic'}
-    x_vals = np.array(solvec[0,:])
-    y_vals = np.array(solvec[1,:])
-    z_vals = np.array(solvec[2,:])
+    x = np.array(solvec[0,:])
+    y = np.array(solvec[1,:])
+    z = np.array(solvec[2,:])
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    traj = ax.scatter(x_vals,y_vals,z_vals, c=time, cmap = 'plasma', s=.5)
+    traj = ax.scatter(x,y,z, c=time, cmap = 'plasma', s=.5)
     ax.scatter(0,0,0, c='m', marker='*')
 
     if args['Frame'] == 'ECRF':
@@ -116,13 +116,13 @@ def Orbit3D(solvec, time, mu, args={}):
 
 def Orbit2D(solvec, time, mu, args={}):
     _args = {'Frame':'Synodic'}
-    x_vals = np.array(solvec[0,:])
-    y_vals = np.array(solvec[1,:])
-    z_vals = np.array(solvec[2,:])
+    x = np.array(solvec[0,:])
+    y = np.array(solvec[1,:])
+    z = np.array(solvec[2,:])
 
     fig = plt.figure()
     ax = plt.axes()
-    traj = ax.scatter(x_vals,y_vals, c=time, cmap = 'plasma', s=.5, label='Spacecraft')
+    traj = ax.scatter(x,y, c=time, cmap = 'plasma', s=.5, label='Spacecraft')
     ax.plot(-mu, 0, c='g', marker='x', label='Earth')
     ax.plot(1-mu, 0, c='b', marker='^', label='Moon')
     ax.plot(0,0, c='m', marker='*')
@@ -169,4 +169,36 @@ def JacobiPlot(C, time, ybound ):
     plt.title('Jacobi Constant vs. Time')
     plt.xlabel('Time')
     plt.ylabel('Jacobi Constant C')
+
+
+def PhasePortrait(solvec, tvec):
+    ''' tvec is odesol.t
+        solvec is the odesol.y'''
+
+    x,y,z,vx,vy,vz = solvec
+
+    fig1, axs = plt.subplots(3,1)
+
+    axs[0].plot(x, vx)
+    axs[0].plot(x[0], vx[0], '*','tab:orange')
+    axs[0].set_title('X-Vel v. X-Pos', fontsize=10)
+    # axs[0].set_xlim(x[0], x[-1])
+    # axs[0].set_ylim(np.min(x), np.max(x))
+    # axs[0].imshow(c=tvec, cmap='plasma')
+
+    axs[1].plot(y, vy)
+    axs[1].plot(y[0], vy[0], '*','tab:orange')
+    # axs[1].axis('equal')
+    axs[1].set_title('Y-Vel v. Y-Pos', fontsize=10)
+    # axs[1].set_xlim(y[0], y[-1])
+    # axs[1].set_ylim(np.min(y), np.max(y))
+
+    axs[2].plot(z, vz)
+    axs[2].plot(z[0], vz[0], '*','tab:orange')
+    # axs[2].axis('equal')
+    axs[2].set_title('Z-Vel v. Z-Pos', fontsize=10)
+    # axs[2].set_xlim(z[0], z[-1])
+    # axs[2].set_ylim(np.min(z), np.max(z))
+
+    # return fig1
 
